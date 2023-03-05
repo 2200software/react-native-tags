@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { View } from "react-native";
+import { FlatList, View } from "react-native";
 
 import Tag from "./Tag";
 import Input from "./Input";
@@ -18,10 +18,10 @@ class Tags extends React.Component {
 
   showLastTag = () => {
     this.setState(state =>
-      ({
-        tags: state.tags.slice(0, -1),
-        text: state.tags.slice(-1)[0] || " "
-      }),
+    ({
+      tags: state.tags.slice(0, -1),
+      text: state.tags.slice(-1)[0] || undefined
+    }),
       () =>
         this.props.onChangeTags && this.props.onChangeTags(this.state.tags)
     );
@@ -29,16 +29,16 @@ class Tags extends React.Component {
 
   addTag = text => {
     this.setState(state =>
-      ({
-        tags: [...state.tags, text.trim()],
-        text: " "
-      }),
+    ({
+      tags: [...state.tags, text.trim()],
+      text: undefined
+    }),
       () => this.props.onChangeTags && this.props.onChangeTags(this.state.tags)
     );
   };
 
   onChangeText = text => {
-    if (text.length === 0) {
+    if (text.length === undefined) {
       this.showLastTag();
     } else if (
       text.length > 1 &&
@@ -75,39 +75,44 @@ class Tags extends React.Component {
 
     return (
       <View style={[styles.container, containerStyle, style]}>
-
-        {this.state.tags.map((tag, index) => {
-
-          const tagProps = {
-            tag,
-            index,
-            deleteTagOnPress,
-            onPress: event => {
-              event?.persist();
-              if (deleteTagOnPress && !readonly) {
-                this.setState(state =>
+        <FlatList
+          numColumns={maxNumberOfTags}
+          columnWrapperStyle={{ flexWrap: 'wrap', margin: 2 }}
+          horizontal={false}
+          showsVerticalScrollIndicator={true}
+          style={[styles.scrollContainer, style]}
+          data={this.state.tags}
+          renderItem={({ item, index }) => {
+            const tagProps = {
+              tag: item,
+              index,
+              deleteTagOnPress,
+              onPress: event => {
+                event?.persist();
+                if (deleteTagOnPress && !readonly) {
+                  this.setState(state =>
                   ({
                     tags: [
                       ...state.tags.slice(0, index),
                       ...state.tags.slice(index + 1)
                     ]
                   }),
-                  () => {
-                    this.props.onChangeTags &&
-                      this.props.onChangeTags(this.state.tags);
-                    onTagPress && onTagPress(index, tag, event, true);
-                  }
-                );
-              } else {
-                onTagPress && onTagPress(index, tag, event, false);
-              }
-            },
-            tagContainerStyle,
-            tagTextStyle
-          };
-
-          return renderTag(tagProps);
-        })}
+                    () => {
+                      this.props.onChangeTags &&
+                        this.props.onChangeTags(this.state.tags);
+                      onTagPress && onTagPress(index, item, event, true);
+                    }
+                  );
+                } else {
+                  onTagPress && onTagPress(index, item, event, false);
+                }
+              },
+              tagContainerStyle,
+              tagTextStyle
+            };
+            return renderTag(tagProps);
+          }}
+        />
 
         {!readonly
           && maxNumberOfTags > this.state.tags.length
@@ -128,7 +133,7 @@ class Tags extends React.Component {
 
 Tags.defaultProps = {
   initialTags: [],
-  initialText: " ",
+  initialText: undefined,
   createTagOnString: [",", " "],
   createTagOnReturn: false,
   readonly: false,

@@ -13,7 +13,6 @@ const Input = (props) => {
     inputContainerStyle,
     textInputProps
   } = props;
-
   return (
     <View style={[styles.textInputContainer, inputContainerStyle]}>
       <TextInput
