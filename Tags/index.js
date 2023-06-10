@@ -70,7 +70,8 @@ class Tags extends React.Component {
       tagTextStyle,
       deleteTagOnPress,
       onTagPress,
-      renderTag
+      renderTag,
+      tagListStyle
     } = this.props;
 
     return (
@@ -80,7 +81,7 @@ class Tags extends React.Component {
           columnWrapperStyle={{ flexWrap: 'wrap', margin: 2 }}
           horizontal={false}
           showsVerticalScrollIndicator={true}
-          style={[styles.scrollContainer, style]}
+          style={[styles.scrollContainer, style, tagListStyle]}
           data={this.state.tags}
           renderItem={({ item, index }) => {
             const tagProps = {
