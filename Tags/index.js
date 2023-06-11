@@ -11,40 +11,42 @@ class Tags extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      tags: props.initialTags,
       text: props.initialText
     };
   };
 
   showLastTag = () => {
+    let newTags = [...this.props.tagsValue]
+    newTags = newTags.slice(0, -1)
     this.setState(state =>
     ({
-      tags: state.tags.slice(0, -1),
-      text: state.tags.slice(-1)[0] || undefined
+      text: newTags.slice(-1)[0] || undefined
     }),
       () =>
-        this.props.onChangeTags && this.props.onChangeTags(this.state.tags)
+        this.props.onChangeTags && this.props.onChangeTags(newTags)
     );
   };
 
   addTag = text => {
+    let newTags = [...this.props.tagsValue]
+    newTags = [...newTags, text.trim()]
     this.setState(state =>
     ({
-      tags: [...state.tags, text.trim()],
       text: undefined
     }),
-      () => this.props.onChangeTags && this.props.onChangeTags(this.state.tags)
+      () => this.props.onChangeTags && this.props.onChangeTags(newTags)
     );
   };
 
   onChangeText = text => {
+    let newTags = [...this.props.tagsValue]
     if (text.length === undefined) {
       this.showLastTag();
     } else if (
       text.length > 1 &&
       this.props.createTagOnString.includes(text.slice(-1)) &&
       !text.match(new RegExp(`^[${this.props.createTagOnString.join("")}]+$`, 'g')) &&
-      !(this.state.tags.indexOf(text.slice(0, -1).trim()) > -1)
+      !(this.props.tagsValue.indexOf(text.slice(0, -1).trim()) > -1)
     ) {
       this.addTag(text.slice(0, -1));
     } else {
@@ -82,7 +84,7 @@ class Tags extends React.Component {
           horizontal={false}
           showsVerticalScrollIndicator={true}
           style={[styles.scrollContainer, style, tagListStyle]}
-          data={this.state.tags}
+          data={this.props.tagsValue}
           renderItem={({ item, index }) => {
             const tagProps = {
               tag: item,
@@ -90,20 +92,11 @@ class Tags extends React.Component {
               deleteTagOnPress,
               onPress: event => {
                 event?.persist();
+                let newTags = [...this.props.tagsValue]
                 if (deleteTagOnPress && !readonly) {
-                  this.setState(state =>
-                  ({
-                    tags: [
-                      ...state.tags.slice(0, index),
-                      ...state.tags.slice(index + 1)
-                    ]
-                  }),
-                    () => {
-                      this.props.onChangeTags &&
-                        this.props.onChangeTags(this.state.tags);
-                      onTagPress && onTagPress(index, item, event, true);
-                    }
-                  );
+                  newTags = [...this.props.tagsValue.slice(0, index), ...this.props.tagsValue.slice(index + 1)]
+                  this.props.onChangeTags && this.props.onChangeTags(newTags);
+                  onTagPress && onTagPress(index, item, event, true);
                 } else {
                   onTagPress && onTagPress(index, item, event, false);
                 }
@@ -116,7 +109,7 @@ class Tags extends React.Component {
         />
 
         {!readonly
-          && maxNumberOfTags > this.state.tags.length
+          && maxNumberOfTags > this.props.tagsValue.length
           &&
           <Input
             value={this.state.text}
